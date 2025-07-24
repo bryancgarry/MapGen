@@ -6,7 +6,7 @@
 
 class MapGen {
 public:
-    MapGen(int width, int height);
+    MapGen(int gridSize, int width, int height);
     ~MapGen();
 
     void run();

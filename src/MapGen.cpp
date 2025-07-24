@@ -1,10 +1,10 @@
 #include "MapGen.hpp"
 #include <iostream>
 
-MapGen::MapGen(int width, int height)
+MapGen::MapGen(int gridSize, int width, int height)
     : window(nullptr), renderer(nullptr),
       windowWidth(width), windowHeight(height),
-      isRunning(true), map(40) {}
+      isRunning(true), map(gridSize, width, height) {}
 
 MapGen::~MapGen() {
     cleanup();
@@ -45,6 +45,7 @@ void MapGen::processEvents() {
         else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
             windowWidth = event.window.data1;
             windowHeight = event.window.data2;
+            map.updateWindowSize(windowWidth, windowHeight);
         }
     }
 }
@@ -57,7 +58,7 @@ void MapGen::render() {
     SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
     SDL_RenderClear(renderer);
 
-    map.render(renderer, windowWidth, windowHeight);
+    map.render(renderer);
 
     SDL_RenderPresent(renderer);
 }

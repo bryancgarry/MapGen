@@ -14,6 +14,7 @@ add_executable(MapGen
     src/MapGen.cpp
     src/Map.cpp
     src/MathUtils.cpp
+    src/Delaunay.cpp
 )
 
 target_link_libraries(MapGen ${SDL2_LIBRARIES})
