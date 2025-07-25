@@ -102,7 +102,10 @@ bool Edge::operator!=(const Edge& other) const {
 // Triangle Implementation
 // ========================
 Triangle::Triangle() : a{Vector2{0.0f, 0.0f}}, b{Vector2{0.0f, 0.0f}}, c{Vector2{0.0f, 0.0f}} {}
-Triangle::Triangle(Vector2 a_in, Vector2 b_in, Vector2 c_in) : a{a_in}, b{b_in}, c{c_in} { enforceCCW(); }
+Triangle::Triangle(Vector2 a_in, Vector2 b_in, Vector2 c_in) : a{a_in}, b{b_in}, c{c_in} { 
+    enforceCCW(); 
+    computeCircumcenter();
+}
 
 bool Triangle::operator==(const Triangle& other) const {
         return other.containsVertex(a) &&
@@ -141,6 +144,38 @@ void Triangle::enforceCCW() {
     if (orientation() < 0) {
         std::swap(b, c);
     }
+}
+
+void Triangle::computeCircumcenter() {
+    float d = 2 * (a.x * (b.y - c.y) +
+                   b.x * (c.y - a.y) +
+                   c.x * (a.y - b.y));
+
+    if (std::abs(d) < 1e-6f) {
+        // Degenerate triangle; return center of bounding box
+        float minX = std::min({a.x, b.x, c.x});
+        float maxX = std::max({a.x, b.x, c.x});
+        float minY = std::min({a.y, b.y, c.y});
+        float maxY = std::max({a.y, b.y, c.y});
+        circumcenter.x = (minX + maxX) * 0.5f;
+        circumcenter.y = (minY + maxY) * 0.5f;
+        return;
+    }
+
+    float aSq = a.x * a.x + a.y * a.y;
+    float bSq = b.x * b.x + b.y * b.y;
+    float cSq = c.x * c.x + c.y * c.y;
+
+    float ux = (aSq * (b.y - c.y) +
+                bSq * (c.y - a.y) +
+                cSq * (a.y - b.y)) / d;
+
+    float uy = (aSq * (c.x - b.x) +
+                bSq * (a.x - c.x) +
+                cSq * (b.x - a.x)) / d;
+
+    circumcenter.x = ux;
+    circumcenter.y = uy;
 }
 
 std::vector<Edge> Triangle::edges() const {

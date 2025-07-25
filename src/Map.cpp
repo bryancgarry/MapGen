@@ -3,13 +3,13 @@
 
 #include <iostream>
 
-Map::Map(int gridSize) : 
-m_gridSize(gridSize), 
-m_jitter(0.4f) 
-{
-    generateGridPoints(m_gridSize, m_jitter);
-    generateTriangles();
-}
+// Map::Map(int gridSize) : 
+// m_gridSize(gridSize), 
+// m_jitter(0.4f) 
+// {
+//     generateGridPoints(m_gridSize, m_jitter);
+//     generateTriangles();
+// }
 
 Map::Map(int gridSize, int windowWidth, int windowHeight) : 
 m_gridSize(gridSize), 
@@ -19,10 +19,12 @@ m_jitter(0.5f)
 {
     generateGridPoints(m_gridSize, m_jitter);
     generateTriangles();
+    generateVoronoiCells();
 }
 
 void Map::render(SDL_Renderer* renderer) {
-    drawDelaunayTriangles(renderer);
+    //drawDelaunayTriangles(renderer);
+    drawVoronoiCells(renderer);
     drawSeedPoints(renderer);
 }
 
@@ -30,7 +32,13 @@ void Map::drawSeedPoints(SDL_Renderer* renderer) {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);   // RED
 
     for (const auto& point : m_points) {
-        SDL_RenderDrawPoint(renderer, point.x, point.y);
+        //SDL_RenderDrawPoint(renderer, point.x, point.y);
+        SDL_Rect pointRect = {
+            static_cast<int>(point.x) - 2,
+            static_cast<int>(point.y) - 2,
+            4, 4
+        };
+        SDL_RenderFillRect(renderer, &pointRect);
     }
 }
 
@@ -49,6 +57,22 @@ void Map::drawDelaunayTriangles(SDL_Renderer* renderer) {
     }
 }
 
+void Map::drawVoronoiCells(SDL_Renderer* renderer) {
+    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green
+    //SDL_RenderDrawLine(renderer, 0, 0, 400, 400);
+
+    // Iterate over voronoi cells
+    for (int i = 0; i < m_voronoiCells.size(); i++) {
+        // Iterate over vertices for each cell
+        std::vector<Vector2> verts = m_voronoiCells[i].vertices;
+        for (int j = 0; j < verts.size(); j++) {
+            Vector2 p0 = verts[j];
+            Vector2 p1 = verts[(j + 1) % verts.size()];
+            SDL_RenderDrawLine(renderer, p0.x, p0.y, p1.x, p1.y);
+        }
+    }
+}   
+
 void Map::updateWindowSize(int width, int height) {
     m_windowWidth = width;
     m_windowHeight = height;
@@ -66,10 +90,10 @@ void Map::generateGridPoints(int gridSize, float jitter) {
             // Only apply jitter if not on the edge
             float jitterX = 0.0f;
             float jitterY = 0.0f;
-            if ((x > 0 && x < gridSize) && (y > 0 && y < gridSize)) {
+            //if ((x > 0 && x < gridSize) && (y > 0 && y < gridSize)) {
                 jitterX = jitter * (dist(rng) - dist(rng));
                 jitterY = jitter * (dist(rng) - dist(rng));
-            }
+            //}
 
             // Apply jitter to coordinate
             float baseX = (float)x + jitterX;
@@ -82,11 +106,43 @@ void Map::generateGridPoints(int gridSize, float jitter) {
             m_points.emplace_back(p);
         }
     }
+    
+    std::cout << "Point Total: " << m_points.size() << std::endl;
 }
 
 void Map::generateTriangles() {
     Delaunay del(m_points);
     m_triangles = del.getTriangles();
+
+    std::cout << "DTri Total: " << m_triangles.size() << std::endl;
 }
 
+void Map::generateVoronoiCells() {
+    for (const Vector2& point : m_points) {
+        std::vector<Vector2> vertices;
 
+        // 1. Find circumcenters of triangles that include this point
+        for (const Triangle& tri : m_triangles) {
+            if (tri.containsVertex(point)) {
+                vertices.push_back(tri.circumcenter);
+            }
+        }
+
+        // 2. Sort the circumcenters counter-clockwise around the point
+        std::sort(vertices.begin(), vertices.end(), [&point](const Vector2& a, const Vector2& b) {
+            float angleA = std::atan2(a.y - point.y, a.x - point.x);
+            float angleB = std::atan2(b.y - point.y, b.x - point.x);
+            return angleA < angleB;
+        });
+
+        // 3. Store the Voronoi vertices
+        if (vertices.size() >= 3) {
+            VoronoiCell vc;
+            vc.origin = point;
+            vc.vertices = vertices;
+            m_voronoiCells.push_back(vc);
+        }
+    }
+
+    std::cout << "VCell Total: " << m_voronoiCells.size() << std::endl;
+}

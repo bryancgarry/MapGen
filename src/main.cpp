@@ -1,7 +1,7 @@
 #include "MapGen.hpp"
 
 int main(int argc, char* argv[]) {
-    int GRID_SIZE = 30;
+    int GRID_SIZE = 25;
     int WINDOOW_WIDTH = 800;
     int WINDOW_HEIGHT = 600;
 

@@ -51,6 +51,7 @@ struct Edge {
 // ========================
 struct Triangle {
     Vector2 a, b, c;
+    Vector2 circumcenter;
 
     Triangle();
     Triangle(Vector2 a_in, Vector2 b_in, Vector2 c_in);
@@ -63,7 +64,17 @@ struct Triangle {
     float orientation();
     void enforceCCW();
 
+    void computeCircumcenter();
+
     std::vector<Edge> edges() const;
+};
+
+// ========================
+// Voronoi Cell Implementation
+// ========================
+struct VoronoiCell {
+    Vector2 origin;                
+    std::vector<Vector2> vertices;  // The ordered list of circumcenters
 };
 
 #endif // MATHUTILS_HPP
