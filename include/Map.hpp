@@ -4,13 +4,15 @@
 #include "MathUtils.hpp"
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL2_gfxPrimitives.h>
 #include <vector>
 #include <random>
 
 class Map {
 public:
-    // Map(int gridSize);
     Map(int gridSize, int windowWidth, int windowHeight);
+
+    void init();
 
     void render(SDL_Renderer* renderer);
 
@@ -23,6 +25,12 @@ public:
     void generateGridPoints(int gridSize, float jitter);
     void generateTriangles();
     void generateVoronoiCells();
+
+    // Perlin Noise Generation - modified from https://www.youtube.com/watch?v=kCIaHqb60Cw
+    float perlin(float x, float y);
+    Vector2 randomGradient(int ix, int iy);
+    float dotGridGradient(int ix, int iy, float x, float y);
+
 
 private:
     int m_gridSize;

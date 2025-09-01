@@ -55,7 +55,7 @@ void MapGen::update() {
 }
 
 void MapGen::render() {
-    SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
+    SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
     SDL_RenderClear(renderer);
 
     map.render(renderer);

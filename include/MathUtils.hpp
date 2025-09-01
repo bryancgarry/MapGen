@@ -1,6 +1,7 @@
 #ifndef MATHUTILS_HPP
 #define MATHUTILS_HPP
 
+#include "SDL2/SDL.h"
 #include <cmath>
 #include <vector>
 
@@ -75,6 +76,7 @@ struct Triangle {
 struct VoronoiCell {
     Vector2 origin;                
     std::vector<Vector2> vertices;  // The ordered list of circumcenters
+    SDL_Color color;
 };
 
 #endif // MATHUTILS_HPP
